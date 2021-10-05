@@ -81,3 +81,27 @@ Template selection: 2
 SAM CLI update available (1.33.0); (1.31.0 installed)
 To download: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html
 ```
+This creates another folder by name `donut_or_not` in the current folder. There is an `app`, `events` folders, a `template.yml` and a `training.ipynb` file. For now, these files correspond to a simple MNIST example using PyTorch. We will delete or replace these files with ones needed for our workflow.
+
+#### Create a virtual env for development
+For the dev cycle, we need a faster build-deploy loop. For this, we will create a local virtual env.
+
+```python
+(base) ➜  donut_or_not git:(main) ✗ conda activate aws_lambda_default
+(aws_lambda_default) ➜  donut_or_not git:(main) ✗ python -m venv donut_env
+(aws_lambda_default) ➜  donut_or_not git:(main) ✗ . donut_env/bin/activate
+
+# Start installing libs for the web server
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install fastapi
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install uvicorn[standard]
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install jinja2
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install mangum
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install aiofiles
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install python-multipart
+
+# Install libs for DL inference
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip install fastai==1.0.61
+
+# Write the requirements.txt file
+(donut_env) (aws_lambda_default) ➜  donut_or_not git:(main) ✗ pip freeze > ./donut_or_not/app/requirements.txt
+```
