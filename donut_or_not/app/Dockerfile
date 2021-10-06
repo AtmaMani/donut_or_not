@@ -4,7 +4,7 @@ COPY main.py ${LAMBDA_TASK_ROOT}
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 COPY imgs /tmp/imgs
 COPY templates ${LAMBDA_RUNTIME_DIR}/templates
-COPY model /opt/ml/model
+COPY models ${LAMBDA_RUNTIME_DIR}/models
 
 RUN python3.8 -m pip install -r requirements.txt -t "${LAMBDA_TASK_ROOT}"
 
