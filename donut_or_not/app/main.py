@@ -18,6 +18,12 @@ try:
     templates_dir = os.path.join(os.environ.get("LAMBDA_RUNTIME_DIR"), "templates")
 except:
     templates_dir = "./templates"
+
+try:
+    models_dir = os.path.join(os.environ.get("LAMBDA_RUNTIME_DIR"), "models")
+except:
+    models_dir = "./models"
+
 imgs_dir = "/tmp/imgs"
 templates = Jinja2Templates(directory=templates_dir)
 
@@ -33,15 +39,19 @@ def hello():
 async def list_uploaded_files():
     return os.listdir(imgs_dir)
 
+
 @app.get('/getTimestamp')
 async def get_timestamp():
     return datetime.now().strftime("%y%h%d_%H%M%S")
+
 
 # Upload files
 @app.post('/classifyImg')
 async def upload_classify_img(file: UploadFile = File(...)):
     logger.info("classifyImg is called")
     print("UploadImg is called- within func")
+
+    # Create download folder
     if not os.path.exists(imgs_dir):
         os.mkdir(imgs_dir)
         logger.info(f'Made {imgs_dir}')
@@ -50,40 +60,47 @@ async def upload_classify_img(file: UploadFile = File(...)):
         logger.info(f'{imgs_dir} exists, reusing it.')
         print(f'{imgs_dir} exists, reusing it.')
 
+    # Download image
     timestamp = await get_timestamp()
     file_name = f'{timestamp}.jpg'
 
     with open(f'{imgs_dir}/{file_name}', 'wb+') as fp:
         fp.write(file.file.read())
-
     logger.info('Wrote file to disk')
     print('Wrote file to disk')
+
+    # classify image
+    img_class = classify_img(f'{imgs_dir}/{file_name}')
+
     return {'Status':'Uploaded',
-            'uploaded_files': await list_uploaded_files()}
+            'uploaded_files': await list_uploaded_files(),
+            'Image class: ': img_class
+            }
 
 
-# Upload files
-@app.post('/uploadImg2')
-async def create_upload_img2(file: bytes = File(...)):
-    print("UploadImg is called- within func2")
-    if not os.path.exists(imgs_dir):
-        os.mkdir(imgs_dir)
-        print(f'Made {imgs_dir}')
-    else:
-        print(f'{imgs_dir} exists, reusing it.')
+# Classify images with DL
+def classify_img(file:str) -> dict:
+    from fastai.vision.image import open_image
+    from fastai.basic_train import load_learner
 
-    file_list = os.listdir(imgs_dir)
-    file_name = f'{len(file_list)+1}.jpg'
+    # load model
+    learn = load_learner(models_dir)
 
-    # with open(f'{imgs_dir}/{file_name}', 'wb+') as fp:
-    #     # fp.write(file.file.read())
-    #     fp.write(file.)
+    # open image file
+    img = open_image(file)
 
-    print('Wrote file to disk')
-    # return {'Status':'Uploaded',
-    #         'uploaded_files': await list_uploaded_files()}
-    return {'Status':'Upload stopped',
-            'file_size':len(file)}
+    # predict
+    pred_class, pred_idx, outputs = learn.predict(img)
+    
+    # compose output
+    classes=['vada','bagel','donut']
+    probabilities = [round(f,4) for f in outputs.tolist()]
+
+    d = {'predicted_class': pred_class.obj,
+        'class_probabilities': dict(list(zip(classes, probabilities)))}
+
+    return d
+
 
 @app.get('/', response_class=HTMLResponse)
 async def index(request: Request):
