@@ -1,0 +1,13 @@
+-f https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.0+cpu
+torchvision==0.9.0+cpu
+aiofiles
+beautifulsoup4
+Bottleneck==1.3.2
+fastai==1.0.61
+fastapi==0.68.1
+Jinja2==3.0.2
+mangum
+pydantic
+requests
+uvicorn

@@ -1,29 +1,48 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
 
+  Sample SAM Template for Donut-or-not
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 50
-    MemorySize: 5000
-  Api:
-    BinaryMediaTypes:
-      - image/png
-      - image/jpg
-      - image/jpeg
+    Timeout: 15
 
 Resources:
-  InferenceFunction:
+  DonutOrNotFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
-      Architectures:
-        - x86_64
+#      CodeUri: app/
+#      Handler: main.handler
       Events:
-        Inference:
+        Root:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /classify_digit
+            Path: /
+            Method: get
+        ListImgFiles:
+          Type: Api
+          Properties:
+            Path: /listImgFiles
+            Method: get
+        GenTimeStamp:
+          Type: Api
+          Properties:
+            Path: /getTimestamp
+            Method: get
+        ClassifyImg:
+          Type: Api
+          Properties:
+            Path: /classifyImg
             Method: post
+        Hello:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./app
@@ -33,12 +52,12 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  InferenceApi:
-    Description: "API Gateway endpoint URL for Prod stage for Inference function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/classify_digit/"
-  InferenceFunction:
-    Description: "Inference Lambda Function ARN"
-    Value: !GetAtt InferenceFunction.Arn
-  InferenceFunctionIamRole:
-    Description: "Implicit IAM Role created for Inference function"
-    Value: !GetAtt InferenceFunction.Arn
+  DonutOrNotFunctionApi:
+    Description: "API Gateway endpoint URL for Prod stage for DonutOrNot function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  DonutOrNotFunction:
+    Description: "DonutOrNot ARN"
+    Value: !GetAtt DonutOrNotFunction.Arn
+  DonutOrNotFunctionIamRole:
+    Description: "Implicit IAM Role created for DonutOrNot Function"
+    Value: !GetAtt DonutOrNotFunctionRole.Arn
