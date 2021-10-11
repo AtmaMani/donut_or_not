@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import json, os, shutil
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
@@ -11,6 +12,8 @@ from datetime import datetime
 
 # Create app, just like in Flask
 app = FastAPI()
+app.mount('/static', StaticFiles(directory='static'), name='static')
+app.mount('/tmp/imgs', StaticFiles(directory='/tmp/imgs'), name='imgs')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -80,8 +83,8 @@ async def get_timestamp():
 
 
 # Upload files
-@app.post('/classifyImg')
-async def upload_classify_img(file: UploadFile = File(...)):
+@app.post('/classifyImg', response_class=HTMLResponse)
+async def upload_classify_img(request: Request, file: UploadFile = File(...)):
     logger.info("classifyImg is called")
     print("UploadImg is called- within func")
 
@@ -105,11 +108,15 @@ async def upload_classify_img(file: UploadFile = File(...)):
 
     # classify image
     img_class = classify_img(f'{imgs_dir}/{file_name}')
-
-    return {'Status':'Uploaded',
-            'uploaded_files': await list_uploaded_files(),
-            'Image class: ': img_class
-            }
+    
+    # return {'Status':'Uploaded',
+    #         'uploaded_files': await list_uploaded_files(),
+    #         'Image class: ': img_class
+    #         }
+    return templates.TemplateResponse('response.html', {'request':request,
+                                                        'output_filepath': file_name,
+                                                        'output_class': img_class['predicted_class'],
+                                                        'output_probabilities': img_class['class_probabilities']})
 
 
 # Classify images with DL
@@ -139,5 +146,6 @@ def classify_img(file:str) -> dict:
 @app.get('/', response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse('index.html', {'request':request})
+
 
 handler = Mangum(app)

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title style="font-family: Monaco">Donut or Not - classification output</title>
+    <style>
+        .box {
+            width: 100%;
+            border: 5px
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            cursor: zoom-in;
+            box-shadow: 10px 10px 10px #999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box" align="center">
+
+        <h4 align="center" style="font-family: Monaco">Your photo</h4>
+        <!-- <img src={{output_photo_url}} class="img" alt="Output image"> -->
+        <img src="{{url_for('imgs', path=output_filepath)}}" class="img">
+        <h5 align="center" style="font-family: Monaco">Predicted Class: {{output_class}}</h5>
+        <p style="color:darkblue"><i>Class probabilities: {{output_probabilities}}</i></p>
+
+    </div>
+</body>
+
+</html>

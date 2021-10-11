@@ -381,3 +381,13 @@ Value               arn:aws:lambda:us-west-2:939098422637:function:donut-or-not-
 
 Successfully created/updated stack - donut-or-not in us-west-2
 ```
+
+## Caveats when working with AWS Lambda
+There are a few gotchas to keep in mind when running a web server via Lambda
+
+ 1. The API gateway configured on the [cloud vs local runtime is quite different](https://github.com/aws/aws-sam-cli/issues/1216). If you want your API to accept uploaded files, you need to add ```Api:
+    BinaryMediaTypes: ['*~1*']
+```
+to the `template.yaml` file. This allows the app to accept binary files of all types that are uploaded by the user. Without this, any upload command will be blocked, but return an un-helpful `Internal Server Error` response.
+
+ 2. Lambda runs your container with a different set of permission on the cloud compared to the local runtime. This can lead to all sorts of [permission denial issues](https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-deployment.html). You can address this by elevating permissions for certain folders or files using the `chmod` command. See the `Dockerfile` for examples.
