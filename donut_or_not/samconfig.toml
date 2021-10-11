@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "donut-or-not"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-e7w5utol4v72"
+s3_prefix = "donut-or-not"
+region = "us-west-2"
+profile = "atma_lambda"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = ["DonutOrNotFunction=939098422637.dkr.ecr.us-west-2.amazonaws.com/donutornot3159b213/donutornotfunction89144d83repo"]

@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import HTMLResponse
-import json, os
+import json, os, shutil
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 import logging
@@ -20,9 +20,43 @@ except:
     templates_dir = "./templates"
 
 try:
-    models_dir = os.path.join(os.environ.get("LAMBDA_RUNTIME_DIR"), "models")
+    models_dir1 = os.path.join(os.environ.get("LAMBDA_TASK_ROOT"), "models")
 except:
-    models_dir = "./models"
+    models_dir1 = "./models"
+
+# copy model to writable dir
+logger.info(f'Src models dir: {models_dir1}')
+models_dir = "/tmp/models"
+copy_flag = False
+if not os.path.exists(models_dir):
+    os.mkdir(models_dir)
+    logger.info(f'Made {models_dir}')
+else:
+    logger.info(f'{models_dir} exists, reusing it.')
+
+try:
+    shutil.copyfile(f'{models_dir1}/export.pkl', f'{models_dir}/export.pkl')
+    logger.info(f'Copied model using copyfile to {models_dir}')
+    copy_flag = True
+except Exception as copy_ex:
+    logger.info(f'Cannot copy with copyfile. ' + str(copy_ex))
+
+if not copy_flag:
+    try:
+        shutil.copy(f'{models_dir1}/export.pkl', f'{models_dir}/export.pkl')
+        logger.info(f'Copied model using copy to {models_dir}')
+        copy_flag = True
+    except Exception as copy_ex:
+        logger.info(f'Cannot copy with copy. ' + str(copy_ex))
+
+if not copy_flag:
+    try:
+        shutil.copy2(f'{models_dir1}/export.pkl', f'{models_dir}/export.pkl')
+        logger.info(f'Copied model using copy2 to {models_dir}')
+        copy_flag = True
+    except Exception as copy_ex:
+        logger.info(f'Cannot copy with copy2 ' + str(copy_ex))
+    
 
 imgs_dir = "/tmp/imgs"
 templates = Jinja2Templates(directory=templates_dir)
