@@ -1,10 +1,22 @@
 # Donut or Not
 **About**: Simple project to run deep learning inferencing on AWS Lambda to distinguish donuts from bagels and vadas (South Indian savory dish).
 
-## Layout of this repo:
-Layout of this repo:
+The tech stack of this project is shown below:
 
-todo 
+![tech stack](tech-stack.jpg)
+
+## Layout of this repo
+### The `donut_or_not/app` folder
+The core of this project is within the `donut_or_not/app` folder. It contains the `main.py` Python file in which the FastAPI server is created and REST endpoints are defined. The `models/export.pkl` contains the deep learning model trained for this job. The `templates` subfolder contains the HTML files using Jinja2 templating syntax. We use Jinja to dynamically construct pieces of the web page without having to rely too much on Javascript.
+
+In addition, the `app` folder has the `Dockerfile` needed to build this into a Docker image. We will use that image to first test the project locally, then push it up to AWS ECR. Finally, we will build the lambda function using this image on the ECR. The `requirements3.txt` has the dependencies specified. These are installed when we build the Docker image.
+
+### All the other stuff
+The `donut_env` folder is the virtualenv created for local development. This is precursor to determining what deps are needed to build the Docker image. Since this folder is in the `gitignore`, is it not part of this repo, but will be created if you follow the set up instructions given below.
+
+The `donut_or_not/events`, `donut_or_not/samconfig.yml`, `donut_or_not/template.yml` are created by SAM as part of the `init` command. We customize the `template.yml` and specify all the endpoints that need to be exposed via AWS API Gateway.
+
+The `training.ipynb` has the notebook used to train the DL model using FastAI. [I used the 2019 course, lessons 1,2](https://course19.fast.ai/videos/?lesson=1) for this.
 
 ## Set up
 The set up for this project consists of two parts. The first part here talks about the bits needed to push this model and inferencing function (built using [FastAPI](https://fastapi.tiangolo.com/) lib) to the cloud using AWS Lambdas. The second part talks about the bits needed to train the PyTorch - FastAI model. These two environments are different from each other. While they can be on the same machine (a GPU powered one), they don't have to necessarily be.
