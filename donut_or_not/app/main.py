@@ -8,24 +8,47 @@ from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 import logging
 from datetime import datetime
+import base64
 
-
-# Create app, just like in Flask
-app = FastAPI()
-app.mount('/static', StaticFiles(directory='static'), name='static')
-app.mount('/tmp/imgs', StaticFiles(directory='/tmp/imgs'), name='imgs')
+# Make logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+# Create app, just like in Flask
+app = FastAPI()
+
+# region Get location of templates, models, static, imgs dirs from Lambda runtime.
 try:
     templates_dir = os.path.join(os.environ.get("LAMBDA_RUNTIME_DIR"), "templates")
 except:
+    # Since this app can be run locally without Lambda on cloud or local Lambda runtime, make local paths
     templates_dir = "./templates"
+templates = Jinja2Templates(directory=templates_dir)
 
 try:
     models_dir1 = os.path.join(os.environ.get("LAMBDA_TASK_ROOT"), "models")
 except:
     models_dir1 = "./models"
+
+# try:  # don't need this as it does not work
+#     static_dir = os.path.join(os.environ.get("LAMBDA_RUNTIME_DIR"), "static")
+# except:
+#     static_dir = "static"
+# static_dir1 = f"/{static_dir}" if not static_dir.startswith("/") else static_dir  # adds preceeding / for route purposes
+
+# Assign location to store uploaded images
+imgs_dir = "/tmp/imgs"
+if not os.path.exists(imgs_dir):
+    os.mkdir(imgs_dir)
+    logger.info(f'Made {imgs_dir}')
+else:
+    logger.info(f'{imgs_dir} exists, reusing it.')
+    
+# endregion
+
+# Mount directories to the app to enable url_for in the Jinja2 template file
+# app.mount(static_dir1, StaticFiles(directory=static_dir), name='static')
+# app.mount('/tmp/imgs', StaticFiles(directory='/tmp/imgs'), name='imgs')
 
 # copy model to writable dir
 logger.info(f'Src models dir: {models_dir1}')
@@ -44,27 +67,7 @@ try:
 except Exception as copy_ex:
     logger.info(f'Cannot copy with copyfile. ' + str(copy_ex))
 
-if not copy_flag:
-    try:
-        shutil.copy(f'{models_dir1}/export.pkl', f'{models_dir}/export.pkl')
-        logger.info(f'Copied model using copy to {models_dir}')
-        copy_flag = True
-    except Exception as copy_ex:
-        logger.info(f'Cannot copy with copy. ' + str(copy_ex))
-
-if not copy_flag:
-    try:
-        shutil.copy2(f'{models_dir1}/export.pkl', f'{models_dir}/export.pkl')
-        logger.info(f'Copied model using copy2 to {models_dir}')
-        copy_flag = True
-    except Exception as copy_ex:
-        logger.info(f'Cannot copy with copy2 ' + str(copy_ex))
-    
-
-imgs_dir = "/tmp/imgs"
-templates = Jinja2Templates(directory=templates_dir)
-
-
+# Start to define REST APIs
 @app.get('/hello')
 def hello():
     logger.info('Logger /hello was called')
@@ -86,35 +89,23 @@ async def get_timestamp():
 @app.post('/classifyImg', response_class=HTMLResponse)
 async def upload_classify_img(request: Request, file: UploadFile = File(...)):
     logger.info("classifyImg is called")
-    print("UploadImg is called- within func")
-
-    # Create download folder
-    if not os.path.exists(imgs_dir):
-        os.mkdir(imgs_dir)
-        logger.info(f'Made {imgs_dir}')
-        print(f'Made {imgs_dir}')
-    else:
-        logger.info(f'{imgs_dir} exists, reusing it.')
-        print(f'{imgs_dir} exists, reusing it.')
 
     # Download image
     timestamp = await get_timestamp()
     file_name = f'{timestamp}.jpg'
+    img_data = file.file.read()
+    img_data_b64 = base64.b64encode(img_data)
+    img_data_b64 = img_data_b64.decode()
 
     with open(f'{imgs_dir}/{file_name}', 'wb+') as fp:
-        fp.write(file.file.read())
+        fp.write(img_data)
     logger.info('Wrote file to disk')
-    print('Wrote file to disk')
 
     # classify image
     img_class = classify_img(f'{imgs_dir}/{file_name}')
     
-    # return {'Status':'Uploaded',
-    #         'uploaded_files': await list_uploaded_files(),
-    #         'Image class: ': img_class
-    #         }
     return templates.TemplateResponse('response.html', {'request':request,
-                                                        'output_filepath': file_name,
+                                                        'output_filepath': img_data_b64,
                                                         'output_class': img_class['predicted_class'],
                                                         'output_probabilities': img_class['class_probabilities']})
 

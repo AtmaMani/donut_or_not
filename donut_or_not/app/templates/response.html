@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
+    <link rel="shortcut icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABiVBMVEUkNmUlNmUlN2UlOGUmOGYnOmcoO2coO2goPGgpPWgpPWkrQGosQWssQmsuRGwuRW0vRm0vRm4wSW8xS3AzTXEzTnE0TnI1T3M1UHM2UnQ3U3Q4VXY4VnY5VnY5V3Y6V3c6WXc7Wng7W3g+Xno/YHtBZH1CZX5CZn9DZn5DZn9DZ39EaIBEaYBFaYFFaoFGbIJHbIJIboNIb4RJcIRKcoVLc4ZNd4hOeIhOeIlPeolRfYtRfoxSf41UgY1Ugo5VhY9WhpBXh5BXh5FYiZJbjZRcjpRcjpVdkJZdkZZglZhglpljm5tknJxlnp1mn55oop9oo59po6BrqKJsqaNuq6RurKVvrqZwr6dxsKdxsadxsahysahysqhzs6hztKl0tal0tap0tqp1t6t1uKt2uKt2uax3uqx3u614vK18wbB9w7F9xLF9xbJ+xbJ/x7N/yLSAyLSBybWByrWCzLaDzLaDzbeEzreEz7iF0LiF0bmG07qH07qH1LqH1LuI1buI1ryJ1ryJ17yK2L0HMp5dAAABOElEQVQ4y2MwFMcHJCwZGAmA4aqACZsCBha4ME+hIYiScPZxkYIpcIgqqqrO8lECK5BrcgOSxvkmSp412lAFUQVaMtIGwQ2+bECOZJMT0JoiRyAzJQOqIDwdrFe/1h9IijbZMDKylIOYgXkwBWkQ620bNRgZhZrMgUyLXD1G9nw/qIKIVIgCzsoARka+RiOocz1KRGAKkqFCUXkMjNz1mhCOdbE8zBeRSVAF/lVMjBx1ymC2TJ0WPByiEqEKgsoZGZmrZcFs1zJEQEUnQBVkxwMFKiTBbPtGc7iCmDiIvGKjHZD0BgcgI5u1OkJBLJjJnV7Agz2yQjNAMaGSUaoA0ullBZYQCzKCK9CpzgwJy6n2FQYJqDZFgCXcm7wQsSmga26mxgsxktVEAEwLmnIN61SNroALvzw/AMF6N1HoX5JmAAAAAElFTkSuQmCC">
     <title style="font-family: Monaco">Donut or Not - classification output</title>
     <style>
         .box {
@@ -25,8 +27,8 @@
     <div class="box" align="center">
 
         <h4 align="center" style="font-family: Monaco">Your photo</h4>
-        <!-- <img src={{output_photo_url}} class="img" alt="Output image"> -->
-        <img src="{{url_for('imgs', path=output_filepath)}}" class="img">
+        
+        <img src="data:image/jpeg;base64,{{output_filepath}}" class="img">
         <h5 align="center" style="font-family: Monaco">Predicted Class: {{output_class}}</h5>
         <p style="color:darkblue"><i>Class probabilities: {{output_probabilities}}</i></p>
 

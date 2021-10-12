@@ -49,6 +49,12 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+        EverythingElse:
+          BinaryMediaTypes: ['*~1*']
+          Properties:
+            Method: any
+            Path: /{proxy+}
+          Type: Api
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./app
